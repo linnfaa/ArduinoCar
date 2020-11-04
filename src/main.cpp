@@ -31,34 +31,41 @@ void setup()
 }
 void forward() // forward
 {
-  analogWrite(pinRB, 0);
-  analogWrite(pinLB, 0);
-  analogWrite(pinLF, 250);
   analogWrite(pinRF, 235);
+  analogWrite(pinRB, 0);
+
+  analogWrite(pinLF, 250);
+  analogWrite(pinLB, 0);
 }
 void turnL(int d) //turn left
 {
-  digitalWrite(pinRB,LOW);
-  digitalWrite(pinRF,HIGH);
-  digitalWrite(pinLB,HIGH);
-  digitalWrite(pinLF,LOW);
+  analogWrite(pinRF,235);
+  analogWrite(pinRB,0);
+  
+  analogWrite(pinLF,0);
+  analogWrite(pinLB,0);
+
   delay(d * 100);
 }
 void turnR(int e) //turn rigth
 {
-  digitalWrite(pinRB,HIGH);
-  digitalWrite(pinRF,LOW);
-  digitalWrite(pinLB,LOW);
-  digitalWrite(pinLF,HIGH);
+  analogWrite(pinRF,0);
+  analogWrite(pinRB,0);
+  
+  analogWrite(pinLF,250);
+  analogWrite(pinLB,0);
+
   delay(e * 100);
 }
-void back(int g) //back
+void back(int a) //back
 {
-  digitalWrite(pinRB,HIGH);
-  digitalWrite(pinRF,LOW);
-  digitalWrite(pinLB,HIGH);
-  digitalWrite(pinLF,LOW);
-  delay(g * 100);
+  analogWrite(pinRF,0);
+  analogWrite(pinRB,235);
+  
+  analogWrite(pinLF,0);
+  analogWrite(pinLB,250);
+
+  delay(a * 100);
 }
 void stop() //stop
 {
@@ -83,27 +90,60 @@ float getDistance()
   return distance_cm;
 }
 
-void control_ultra(float distance){
-  if(distance <= 10){
-    stop();
+void turn(){
+  int pos = 0;
+  int bestPos;
+  float distancePos[5];
+  float max_distance = getDistance();
+
+
+  // ultrasound check
+  for(int i = 0; pos <= 180; pos += 45)
+  {
+    myservo.write(pos);
+    distancePos[i] = getDistance();
+    if(distancePos[i] > max_distance)
+    {
+      max_distance = distancePos[i];
+      bestPos = pos;
+    }
+    i++;
+    Serial.println(pos);
   }
-  else{
-    forward();
+
+  myservo.write(90);
+
+  if(max_distance < 100.00)
+  {
+    back(15);
   }
+  else if (bestPos < 90) // höger
+  {
+    turnR(2);
+  }
+  else if(bestPos > 90) // vänster
+  {
+    turnL(2);
+  }
+
 }
 
 
 void loop()
 {
-  
+  myservo.write(90); // start position
   distanceFwd = getDistance(); 
-  control_ultra(distanceFwd);
+  Serial.print("\n Distance: ");
+  Serial.print(distanceFwd);
 
-
-  myservo.write(-45);
- 
-  
- Serial.print("\n Distance: ");
- Serial.print(distanceFwd);
+  if (distanceFwd < 100.00)
+  {
+    stop();
+    turn();
+  }
+  else
+  {
+    forward();
+  }
 
  }
