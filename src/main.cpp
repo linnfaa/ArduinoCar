@@ -83,26 +83,27 @@ float getDistance()
   return distance_cm;
 }
 
+void control_ultra(float distance){
+  if(distance <= 10){
+    stop();
+  }
+  else{
+    forward();
+  }
+}
+
+
 void loop()
 {
-  do
-  {
-    distanceFwd = getDistance(); 
-    forward();
-  } while (distanceFwd > 30);
-  stop();
-
-  myservo.write(0);
-  delay(1000);
-  myservo.write(180);
-  delay(1000);
   
-  
- 
+  distanceFwd = getDistance(); 
+  control_ultra(distanceFwd);
 
- stopp(10);
+
+  myservo.write(-45);
  
+  
  Serial.print("\n Distance: ");
- Serial.print(distanceUlt);
+ Serial.print(distanceFwd);
 
  }
